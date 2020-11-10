@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="camera_name" default="camera" />
+  <node pkg="yolo_classification" type="yolo_classification" name="yolo_classification" output="screen" >
+    <param name="darknet_cfg_file" value="$(find darknet_ros)/cfg/yolov3.cfg" />
+    <param name="darknet_weights_file" value="$(find darknet_ros)/yolov3.weights" />
+    <param name="camera_name" value="$(arg camera_name)" />
+  </node>
+
+</launch>
