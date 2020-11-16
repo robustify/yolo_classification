@@ -12,16 +12,13 @@ namespace yolo_classification
     pn.param("darknet_cfg_file", darknet_cfg_file_, std::string(""));
     pn.param("darknet_weights_file", darknet_weights_file_, std::string(""));
 
-    std::string cam;
-    pn.param("camera_name", cam, std::string("camera"));
-
     srv_.setCallback(boost::bind(&YoloClassification::reconfig, this, _1, _2));
     net_ = load_network(const_cast<char*>(darknet_cfg_file_.c_str()), const_cast<char*>(darknet_weights_file_.c_str()), 0);
 
-    sub_image_ = ros::NodeHandle(cam).subscribe("image_rect_color", 1, &YoloClassification::recvImage, this);
+    sub_image_ = n.subscribe("image_rect_color", 1, &YoloClassification::recvImage, this);
+    pub_detections_ = n.advertise<YoloObjectArray>("yolo_objects", 1);
 
     skip_ = 0;
-    namedWindow("Output", WINDOW_NORMAL);
   }
 
   void YoloClassification::recvImage(const sensor_msgs::ImageConstPtr& msg)
@@ -38,21 +35,15 @@ namespace yolo_classification
     Mat raw_img = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
     
     // Run image through the neural network and return classifications and bounding boxes
-    DarknetClassificationArray darknet_bboxes;
-    runDarknet(raw_img, darknet_bboxes);
+    YoloObjectArray darknet_bboxes;
+    darknet_bboxes.header = msg->header;
+    runDarknet(raw_img, darknet_bboxes.objects);
 
-    // Visualize output
-    for (auto& bbox : darknet_bboxes) {
-      cv::Point2d corner(std::get<0>(bbox).x, std::get<0>(bbox).y);
-      rectangle(raw_img, std::get<0>(bbox), Scalar(0, 255, 0));
-      putText(raw_img, std::get<1>(bbox), corner, FONT_HERSHEY_DUPLEX, 0.5, Scalar(255, 255, 255));
-    }
-
-    imshow("Output", raw_img);
-    waitKey(1);
+    // Publish detections for other nodes to use
+    pub_detections_.publish(darknet_bboxes);
   }
 
-  void YoloClassification::runDarknet(const Mat& raw_img, DarknetClassificationArray& darknet_bboxes)
+  void YoloClassification::runDarknet(const Mat& raw_img, std::vector<YoloObject>& darknet_bboxes)
   {
     image temp_img = mat_to_image(raw_img);
     image im = resize_image(temp_img, net_->w, net_->h);
@@ -87,14 +78,18 @@ namespace yolo_classification
       int top   = (int)(image_scale_y * (b.y - 0.5 * b.h));
       int bot   = (int)(image_scale_y * (b.y + 0.5 * b.h));
 
-      std::tuple<Rect2d, std::string, double> candidate_bbox(Rect2d(left, top, right - left, bot - top),
-                                                            std::string(COCO_CLASSES_[best_classification]),
-                                                            highest_prob);
+      YoloObject candidate_bbox;
+      candidate_bbox.label = std::string(COCO_CLASSES_[best_classification]);
+      candidate_bbox.confidence = highest_prob;
+      candidate_bbox.x = left;
+      candidate_bbox.y = top;
+      candidate_bbox.w = right - left;
+      candidate_bbox.h = bot - top;
 
       bool found_duplicate = false;
       for (auto& bbox : darknet_bboxes) {
-        int dx = std::abs(std::get<0>(bbox).x - left);
-        int dy = std::abs(std::get<0>(bbox).y - top);
+        int dx = std::abs(bbox.x - left);
+        int dy = std::abs(bbox.y - top);
         if ((dx < cfg_.duplicate_thres) && (dy < cfg_.duplicate_thres)) {
           found_duplicate = true;
           break;

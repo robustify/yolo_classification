@@ -5,6 +5,7 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include <yolo_classification/YoloObjectArray.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <yolo_classification/DarknetConfig.h>
@@ -14,8 +15,6 @@
 namespace yolo_classification
 {
 
-  typedef std::vector<std::tuple<cv::Rect2d, std::string, double> > DarknetClassificationArray;
-
   class YoloClassification
   {
     public:
@@ -24,9 +23,10 @@ namespace yolo_classification
     private:
       void reconfig(DarknetConfig& config, uint32_t level);
       void recvImage(const sensor_msgs::ImageConstPtr& msg);
-      void runDarknet(const cv::Mat& raw_img, DarknetClassificationArray& darknet_bboxes);
+      void runDarknet(const cv::Mat& raw_img, std::vector<YoloObject>& darknet_bboxes);
 
       ros::Subscriber sub_image_;
+      ros::Publisher pub_detections_;
 
       dynamic_reconfigure::Server<DarknetConfig> srv_;
       DarknetConfig cfg_;

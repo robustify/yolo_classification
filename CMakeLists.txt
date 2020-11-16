@@ -7,6 +7,8 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   cv_bridge
   darknet_ros
+  message_generation
+  message_filters
 )
 find_package(OpenCV REQUIRED)
 
@@ -18,6 +20,19 @@ endif()
 
 generate_dynamic_reconfigure_options(
   cfg/Darknet.cfg
+)
+
+add_message_files(
+  DIRECTORY
+    msg
+  FILES
+    YoloObject.msg
+    YoloObjectArray.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+    std_msgs
 )
 
 catkin_package(
@@ -38,6 +53,18 @@ add_dependencies(${PROJECT_NAME}
   ${PROJECT_NAME}_gencfg
 )
 target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+
+add_executable(synced_yolo_data
+  src/synced_yolo_data.cpp
+  src/SyncedYoloData.cpp
+)
+add_dependencies(synced_yolo_data
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(synced_yolo_data
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )

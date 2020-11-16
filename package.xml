@@ -15,5 +15,9 @@
   <depend>dynamic_reconfigure</depend>
   <depend>cv_bridge</depend>
   <depend>darknet_ros</depend>
+  <depend>message_filters</depend>
+
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
 
 </package>
