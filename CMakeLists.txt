@@ -51,6 +51,7 @@ add_executable(${PROJECT_NAME}
 add_dependencies(${PROJECT_NAME}
   ${catkin_EXPORTED_TARGETS}
   ${PROJECT_NAME}_gencfg
+  ${PROJECT_NAME}_gencpp
 )
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -63,6 +64,7 @@ add_executable(synced_yolo_data
 )
 add_dependencies(synced_yolo_data
   ${catkin_EXPORTED_TARGETS}
+  ${PROJECT_NAME}_gencpp
 )
 target_link_libraries(synced_yolo_data
   ${catkin_LIBRARIES}
