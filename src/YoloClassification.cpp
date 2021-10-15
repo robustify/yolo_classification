@@ -15,7 +15,7 @@ namespace yolo_classification
     srv_.setCallback(boost::bind(&YoloClassification::reconfig, this, _1, _2));
     net_ = load_network(const_cast<char*>(darknet_cfg_file_.c_str()), const_cast<char*>(darknet_weights_file_.c_str()), 0);
 
-    sub_image_ = n.subscribe("image_rect_color", 1, &YoloClassification::recvImage, this);
+    sub_image_ = n.subscribe("image_rect", 1, &YoloClassification::recvImage, this);
     pub_detections_ = n.advertise<YoloObjectArray>("yolo_objects", 1);
 
     skip_ = 0;
@@ -33,7 +33,7 @@ namespace yolo_classification
 
     // Convert ROS image message into an OpenCV Mat
     Mat raw_img = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
-    
+
     // Run image through the neural network and return classifications and bounding boxes
     YoloObjectArray darknet_bboxes;
     darknet_bboxes.header = msg->header;

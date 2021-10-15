@@ -26,5 +26,6 @@ namespace yolo_classification
       boost::shared_ptr<message_filters::Subscriber<sensor_msgs::Image> > sub_img_;
       boost::shared_ptr<message_filters::Subscriber<YoloObjectArray> > sub_objects_;
       boost::shared_ptr<message_filters::Synchronizer<YoloSyncPolicy> > sync_yolo_data_;
+      ros::Publisher pub_output_image_;
   };
 }
