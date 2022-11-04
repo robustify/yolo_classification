@@ -2,8 +2,8 @@
 
 This package uses Darknet CNN and the COCO database to classify objects in an RGB image. See details here: [https://pjreddie.com/darknet/yolo/](https://pjreddie.com/darknet/yolo/)
 
-To use the `yolo_classification` package in this repository, first clone Dataspeed's fork of the Darknet repository:
-[https://github.com/DataspeedInc/darknet](https://github.com/DataspeedInc/darknet)
+To use the `yolo_classification` package in this repository, first clone Robustify's fork of the Darknet repository:
+[https://github.com/robustify/darknet](https://github.com/robustify/darknet)
 
 The fork adds a ROS package that builds Darknet and exports the shared C library and headers, as well as the Python interface wrapper for use in other ROS packages. This package makes use of these exported components.
 
